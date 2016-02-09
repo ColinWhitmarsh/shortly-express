@@ -36,7 +36,14 @@ db.knex.schema.hasTable('clicks').then(function(exists) {
 });
 
 
+
 db.knex.schema.hasTable('users').then(function(exists) {
+  // if (exists) {
+  //   db.knex.schema.dropTable('users').then(function() {
+  //     console.log("Removed users table");
+  //   });
+  //   exists = false;
+  // }
   if (!exists) {
     db.knex.schema.createTable('users', function (user) {
       user.increments('id').primary();

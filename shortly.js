@@ -3,6 +3,7 @@ var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
 var session = require('express-session');
+var bcrypt = require('bcrypt-nodejs');
 
 
 var db = require('./app/config');
@@ -25,9 +26,19 @@ app.use(express.static(__dirname + '/public'));
 app.use(session({ 
   resave:false,
   saveUninitialized: true,
-  secret: "password"
+  secret: 'password'
 }));
 
+var restriction = function(req, res, next) {
+  if (req.session.user) {
+    next();
+  } else {
+    req.session.error = 'Access denied!';
+    // console.log("###################Iamhere");
+    // console.log("req**************************",req);
+    res.redirect('/login');
+  }
+};
 
 app.get('/', restriction,
 function(req, res) { 
@@ -46,8 +57,9 @@ function(req, res) {
 
 app.get('/links', restriction,
 function(req, res) {
-console.log("###################Iamhere");
+  // console.log('###################Iamhere');
   Links.reset().fetch().then(function(links) {
+  
     res.send(200, links.models);
   });
 });
@@ -84,19 +96,30 @@ function(req, res) {
   });
 });
 
+app.post('/login', 
+function(req, res) {
+  var username = req.body.username;
+  Users.query({where: {username: username}}).fetchOne().then(function(model) { 
+    bcrypt.compare(req.body.password, model.get('password'), function(err, result){
+      if(result){
+        req.session.regenerate(function(){
+        req.session.user = username;
+        res.redirect('/index');
+        });
+      }
+    });
+  });
+
+});
+
+
+
+
+
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
-function restriction(req, res, next) {
-  if (req.session.user) {
-    next();
-  } else {
-    req.session.error = 'Access denied!';
-    // console.log("###################Iamhere");
-    // console.log("req**************************",req);
-    res.redirect('/login');
-  }
-};
+
 
 
 
