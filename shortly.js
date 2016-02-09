@@ -103,8 +103,8 @@ function(req, res) {
     bcrypt.compare(req.body.password, model.get('password'), function(err, result){
       if(result){
         req.session.regenerate(function(){
-        req.session.user = username;
-        res.redirect('/index');
+          req.session.user = username;
+          res.redirect('/index');
         });
       }
     });
