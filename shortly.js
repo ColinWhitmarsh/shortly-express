@@ -26,7 +26,8 @@ app.use(express.static(__dirname + '/public'));
 app.use(session({ 
   resave:false,
   saveUninitialized: true,
-  secret: 'password'
+  secret: 'password',
+  expire: false
 }));
 
 var restriction = function(req, res, next) {
@@ -55,17 +56,21 @@ function(req, res) {
   res.render('login');
 });
 
+app.get('/signup', 
+function(req, res) {
+  res.render('signup');
+});
+
 app.get('/links', restriction,
 function(req, res) {
-  // console.log('###################Iamhere');
   Links.reset().fetch().then(function(links) {
-  
     res.send(200, links.models);
   });
 });
 
 app.post('/links', 
 function(req, res) {
+  console.log('&&&&&&&&&&&&&&&&&&&&&', req.session.user);
   var uri = req.body.url;
 
   if (!util.isValidUrl(uri)) {
@@ -100,19 +105,38 @@ app.post('/login',
 function(req, res) {
   var username = req.body.username;
   Users.query({where: {username: username}}).fetchOne().then(function(model) { 
-    bcrypt.compare(req.body.password, model.get('password'), function(err, result){
-      if(result){
-        req.session.regenerate(function(){
-          req.session.user = username;
-          res.redirect('/index');
-        });
-      }
-    });
+    if(!model) {
+      res.redirect('/login');
+    } else {
+      bcrypt.compare(req.body.password, model.get('password'), function(err, result){
+        if(result){
+          req.session.regenerate(function(){
+            req.session.user = username;
+            res.redirect('/');
+          });
+        } 
+      });
+    }
   });
 
 });
 
+app.post('/signup', 
+function(req, res) {
+  new User(req.body).save().then(function () {
+    req.session.regenerate(function(){
+      req.session.user = req.body.username;
+      res.redirect('/');
+    });
+  });
+});
 
+app.get('/logout', 
+function(req, res) {
+  console.log('####################before regen', req.session.user);
+  req.session.destroy();
+  res.redirect('/login');
+});
 
 
 
