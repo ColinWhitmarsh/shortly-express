@@ -2,6 +2,7 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
+var session = require('express-session');
 
 
 var db = require('./app/config');
@@ -21,20 +22,31 @@ app.use(bodyParser.json());
 // Parse forms (signup/login)
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
+app.use(session({ 
+  resave:false,
+  saveUninitialized: true,
+  secret: "password"
+}));
 
 
-app.get('/', 
+app.get('/', restriction,
+function(req, res) { 
+  res.render('index');
+});
+
+app.get('/create', restriction,
 function(req, res) {
   res.render('index');
 });
 
-app.get('/create', 
+app.get('/login', 
 function(req, res) {
-  res.render('index');
+  res.render('login');
 });
 
-app.get('/links', 
+app.get('/links', restriction,
 function(req, res) {
+console.log("###################Iamhere");
   Links.reset().fetch().then(function(links) {
     res.send(200, links.models);
   });
@@ -75,6 +87,16 @@ function(req, res) {
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
+function restriction(req, res, next) {
+  if (req.session.user) {
+    next();
+  } else {
+    req.session.error = 'Access denied!';
+    // console.log("###################Iamhere");
+    // console.log("req**************************",req);
+    res.redirect('/login');
+  }
+};
 
 
 
