@@ -35,8 +35,6 @@ var restriction = function(req, res, next) {
     next();
   } else {
     req.session.error = 'Access denied!';
-    // console.log("###################Iamhere");
-    // console.log("req**************************",req);
     res.redirect('/login');
   }
 };
@@ -70,7 +68,6 @@ function(req, res) {
 
 app.post('/links', 
 function(req, res) {
-  console.log('&&&&&&&&&&&&&&&&&&&&&', req.session.user);
   var uri = req.body.url;
 
   if (!util.isValidUrl(uri)) {
@@ -118,7 +115,6 @@ function(req, res) {
       });
     }
   });
-
 });
 
 app.post('/signup', 
@@ -133,7 +129,6 @@ function(req, res) {
 
 app.get('/logout', 
 function(req, res) {
-  console.log('####################before regen', req.session.user);
   req.session.destroy();
   res.redirect('/login');
 });
