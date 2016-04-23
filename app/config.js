@@ -16,7 +16,6 @@ db.knex.schema.hasTable('urls').then(function(exists) {
       link.string('code', 100);
       link.string('title', 255);
       link.integer('visits');
-      // link.integer('user_id').foriegn('users');
       link.timestamps();
     }).then(function (table) {
       console.log('Created Table', table);
@@ -36,15 +35,7 @@ db.knex.schema.hasTable('clicks').then(function(exists) {
   }
 });
 
-
-
 db.knex.schema.hasTable('users').then(function(exists) {
-  // if (exists) {
-  //   db.knex.schema.dropTable('users').then(function() {
-  //     console.log("Removed users table");
-  //   });
-  //   exists = false;
-  // }
   if (!exists) {
     db.knex.schema.createTable('users', function (user) {
       user.increments('id').primary();
@@ -56,10 +47,5 @@ db.knex.schema.hasTable('users').then(function(exists) {
     });
   }
 });
-
-/************************************************************/
-// Add additional schema definitions below
-/************************************************************/
-
 
 module.exports = db;

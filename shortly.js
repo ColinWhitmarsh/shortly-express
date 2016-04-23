@@ -18,16 +18,13 @@ var app = express();
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 app.use(partials());
-// Parse JSON (uniform resource locators)
 app.use(bodyParser.json());
-// Parse forms (signup/login)
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 app.use(session({ 
+  secret: 'password',
   resave:false,
   saveUninitialized: true,
-  secret: 'password',
-  expire: false
 }));
 
 var restriction = function(req, res, next) {
@@ -47,16 +44,6 @@ function(req, res) {
 app.get('/create', restriction,
 function(req, res) {
   res.render('index');
-});
-
-app.get('/login', 
-function(req, res) {
-  res.render('login');
-});
-
-app.get('/signup', 
-function(req, res) {
-  res.render('signup');
 });
 
 app.get('/links', restriction,
@@ -98,9 +85,15 @@ function(req, res) {
   });
 });
 
+app.get('/login', 
+function(req, res) {
+  res.render('login');
+});
+
 app.post('/login', 
 function(req, res) {
   var username = req.body.username;
+  var password = req.body.password;
   Users.query({where: {username: username}}).fetchOne().then(function(model) { 
     if(!model) {
       res.redirect('/login');
@@ -115,6 +108,11 @@ function(req, res) {
       });
     }
   });
+});
+
+app.get('/signup', 
+function(req, res) {
+  res.render('signup');
 });
 
 app.post('/signup', 
@@ -132,21 +130,6 @@ function(req, res) {
   req.session.destroy();
   res.redirect('/login');
 });
-
-
-
-/************************************************************/
-// Write your authentication routes here
-/************************************************************/
-
-
-
-
-/************************************************************/
-// Handle the wildcard route last - if all other routes fail
-// assume the route is a short code and try and handle it here.
-// If the short-code doesn't exist, send the user to '/'
-/************************************************************/
 
 app.get('/*', function(req, res) {
   new Link({ code: req.params[0] }).fetch().then(function(link) {
